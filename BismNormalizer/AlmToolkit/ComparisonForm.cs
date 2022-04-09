@@ -32,6 +32,7 @@ namespace AlmToolkit
         private string _fileName = null;
         private bool _unsaved = false;
         private bool _newerVersionAvailable = false;
+        private bool _fileDiffMode = false;
         private string _latestVersion = null;
 
         #endregion
@@ -221,6 +222,11 @@ namespace AlmToolkit
             connForm.ComparisonInfo = _comparisonInfo;
             connForm.StartPosition = FormStartPosition.CenterParent;
             connForm.DpiScaleFactor = _dpiScaleFactor;
+            if (_fileDiffMode)
+            {
+                connForm.CloseOnLoad = true;
+            }
+
             connForm.ShowDialog();
             if (connForm.DialogResult == DialogResult.OK)
             {
@@ -822,6 +828,8 @@ namespace AlmToolkit
             _comparisonInfo.ConnectionInfoSource.BimFile = fileName1;
             _comparisonInfo.ConnectionInfoTarget.UseBimFile = true;
             _comparisonInfo.ConnectionInfoTarget.BimFile = fileName2;
+
+            _fileDiffMode = true;
 
             SetFileNameTitle(false);
             PopulateSourceTargetTextBoxes();

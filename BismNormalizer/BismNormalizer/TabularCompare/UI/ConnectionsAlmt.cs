@@ -17,6 +17,7 @@ namespace BismNormalizer.TabularCompare.UI
         private float _dpiScaleFactor;
         private bool _sourceDatabaseBound = false;
         private bool _targetDatabaseBound = false;
+        private bool _closeOnLoad = false;
         private List<PowerBIInstance> _powerBIInstances = new List<PowerBIInstance>();
 
         #endregion
@@ -28,6 +29,12 @@ namespace BismNormalizer.TabularCompare.UI
 
         private void Connections_Load(object sender, EventArgs e)
         {
+            if (_closeOnLoad)
+            {
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+
             //Settings.Default.SourceServerAutoCompleteEntries = "localhost|";
             //Settings.Default.TargetServerAutoCompleteEntries = "localhost|";
             //Settings.Default.SourceCatalog = "";
@@ -277,6 +284,12 @@ namespace BismNormalizer.TabularCompare.UI
         {
             get { return _dpiScaleFactor; }
             set { _dpiScaleFactor = value; }
+        }
+
+        public bool CloseOnLoad
+        {
+            get { return _closeOnLoad; }
+            set { _closeOnLoad = value; }
         }
 
         private void rdoSourceDataset_CheckedChanged(object sender, EventArgs e)
