@@ -38,6 +38,19 @@ namespace AlmToolkit
 
             if (args != null && args.Length > 0)
             {
+                if (args.Length > 2 && args[0] == "diff")
+                //User opened two files diff
+                {
+                    string fileName1 = args[1];
+                    string fileName2 = args[2];
+                    if (File.Exists(fileName1) && File.Exists(fileName2))
+                    {
+                        ComparisonForm MainFrom = new ComparisonForm();
+                        MainFrom.DiffFiles(fileName1, fileName2);
+                        Application.Run(MainFrom);
+                        return;
+                    }
+                }
                 if (args.Length > 1)
                 //User opened from Desktop with server/db name
                 {

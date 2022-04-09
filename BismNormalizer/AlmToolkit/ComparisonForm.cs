@@ -815,6 +815,18 @@ namespace AlmToolkit
             }
         }
 
+        public void DiffFiles(string fileName1, string fileName2)
+        {
+            _comparisonInfo = new ComparisonInfo();
+            _comparisonInfo.ConnectionInfoSource.UseBimFile = true;
+            _comparisonInfo.ConnectionInfoSource.BimFile = fileName1;
+            _comparisonInfo.ConnectionInfoTarget.UseBimFile = true;
+            _comparisonInfo.ConnectionInfoTarget.BimFile = fileName2;
+
+            SetFileNameTitle(false);
+            PopulateSourceTargetTextBoxes();
+        }
+
         private void SetFileNameTitle(bool unsaved)
         {
             _unsaved = unsaved;
