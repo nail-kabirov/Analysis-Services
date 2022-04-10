@@ -18,30 +18,43 @@ namespace BismNormalizer.TabularCompare
         MemoryStream fileData = new MemoryStream();
         public PowerBiTemplate(string path)
         {
-            try
+            var access = FileAccess.ReadWrite;
+
+            for (int i = 0; i < 2; ++i)
             {
-                using (var fs = new FileStream(path, FileMode.Open))
+                try
                 {
-                    fs.CopyTo(fileData);
-                    fileData.Seek(0, SeekOrigin.Begin);
-                    using (var za = new ZipArchive(fileData, ZipArchiveMode.Read, true))
+                    using (var fs = new FileStream(path, FileMode.Open, access))
                     {
-                        var modelEntry = za.Entries.FirstOrDefault(e => e.Name == "DataModelSchema");
-                        if (modelEntry != null)
+                        fs.CopyTo(fileData);
+                        fileData.Seek(0, SeekOrigin.Begin);
+                        using (var za = new ZipArchive(fileData, ZipArchiveMode.Read, true))
                         {
-                            using (var sr = new StreamReader(modelEntry.Open(), Encoding.Unicode, true, 1024, true))
+                            var modelEntry = za.Entries.FirstOrDefault(e => e.Name == "DataModelSchema");
+                            if (modelEntry != null)
                             {
-                                _modelJson = sr.ReadToEnd();
+                                using (var sr = new StreamReader(modelEntry.Open(), Encoding.Unicode, true, 1024, true))
+                                {
+                                    _modelJson = sr.ReadToEnd();
+                                }
                             }
+                            else
+                                throw new Exception();
                         }
-                        else
-                            throw new Exception();
+                    }
+                    break;
+                }
+                catch
+                {
+                    if (i == 0)
+                    {
+                        access = FileAccess.Read;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("This file is not a valid PBIX / PBIT file.");
                     }
                 }
-            }
-            catch
-            {
-                throw new InvalidOperationException("This file is not a valid PBIX / PBIT file.");
             }
         }
 
