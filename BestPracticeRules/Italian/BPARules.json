@@ -17,7 +17,7 @@
     "Description": "Per accelerare il tempo di elaborazione e conservare la memoria dopo l'elaborazione, le gerarchie di attributi non devono essere create per le colonne che non vengono mai utilizzate per lo slicing dai client MDX. In altre parole, tutte le colonne nascoste che non vengono utilizzate come Ordina per colonna o a cui viene fatto riferimento nelle gerarchie utente devono avere la proprietà IsAvailableInMdx impostata su false. Riferimento: https://blog.crossjoin.co.uk/2018/07/02/isavailableinmdx-ssas-tabular/",
     "Severity": 2,
     "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
-    "Expression": "IsAvailableInMDX\r\nand\r\n\n(IsHidden or Table.IsHidden)\r\nand\r\n\nnot UsedInSortBy.Any() \r\nand\r\n\nnot UsedInHierarchies.Any()\r\nand\r\nnot UsedInVariations.Any()",
+    "Expression": "IsAvailableInMDX\r\nand\r\n\n(IsHidden or Table.IsHidden)\r\nand\r\n\nnot UsedInSortBy.Any() \r\nand\r\n\nnot UsedInHierarchies.Any()\r\nand\r\nnot UsedInVariations.Any()\r\nand\r\nSortByColumn = null",
     "FixExpression": "IsAvailableInMDX = false",
     "CompatibilityLevel": 1200
   },
@@ -152,6 +152,16 @@
     "CompatibilityLevel": 1200
   },
   {
+    "ID": "AVOID_USING_MANY-TO-MANY_RELATIONSHIPS_ON_TABLES_USED_FOR_DYNAMIC_ROW_LEVEL_SECURITY",
+    "Name": "[Prestazioni] Evita di utilizzare relazioni molti-a-molti nelle tabelle utilizzate per la sicurezza dinamica a livello di riga",
+    "Category": "Prestazioni",
+    "Description": "L'utilizzo di relazioni molti-a-molti su tabelle che utilizzano la sicurezza dinamica a livello di riga può causare un grave degrado delle prestazioni delle query. I problemi di prestazioni di questo modello si aggravano durante l'applicazione di SnowFlake a più relazioni molti-a-molti su una tabella che contiene sicurezza a livello di riga. Utilizzare invece uno dei modelli mostrati nell'articolo seguente in cui una singola tabella dimensionale mette in relazione molti a uno con una tabella di sicurezza. Riferimento: https://www.elegantbi.com/post/dynamicrlspatterns",
+    "Severity": 3,
+    "Scope": "Table",
+    "Expression": "UsedInRelationships.Any(FromCardinality == \"Many\" and ToCardinality== \"Many\")\r\nand\r\nRowLevelSecurity.Any(it.Length > 0)",
+    "CompatibilityLevel": 1200
+  },
+  {
     "ID": "UNPIVOT_PIVOTED_(MONTH)_DATA",
     "Name": "[Prestazioni] Evitare di utilizzare i dati \"unpivottati\" nelle tabelle.",
     "Category": "Prestazioni",
@@ -167,7 +177,7 @@
     "Category": "Prestazioni",
     "Severity": 2,
     "Scope": "Relationship",
-    "Expression": "FromCardinality == \"Many\"\nand\nToCardinality == \"Many\"\nand\nCrossFilteringBehavior == \"BothDirections\"",
+    "Expression": "FromCardinality == \"Many\"\n\r\nand\r\n\nToCardinality == \"Many\"\r\n\nand\r\n\nCrossFilteringBehavior == \"BothDirections\"",
     "CompatibilityLevel": 1200,
     "Description": ""
   },
@@ -185,11 +195,11 @@
     "ID": "REMOVE_REDUNDANT_COLUMNS_IN_RELATED_TABLES",
     "Name": "[Prestazioni] Rimuovi le colonne ridondanti nelle tabelle relazionate",
     "Category": "Prestazioni",
+    "Description": "La rimozione delle colonne non necessarie riduce le dimensioni del modello e velocizza il caricamento dei dati.",
     "Severity": 2,
     "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
     "Expression": "UsedInRelationships.Any() == false \r\nand\r\nModel.AllColumns.Any(Name == current.Name and Table.Name != current.Table.Name and Table.UsedInRelationships.Any(FromTable.Name == current.Table.Name))",
-    "CompatibilityLevel": 1200,
-    "Description": ""
+    "CompatibilityLevel": 1200
   },
   {
     "ID": "MEASURES_USING_TIME_INTELLIGENCE_AND_MODEL_IS_USING_DIRECT_QUERY",
@@ -227,7 +237,7 @@
     "Category": "Prestazioni",
     "Description": "L'utilizzo della sicurezza dinamica a livello di riga (RLS) può aggiungere memoria e sovraccarico delle prestazioni. Si prega di ricercare i pro/contro del suo utilizzo. Riferimento: https://docs.microsoft.com/en-us/power-bi/admin/service-admin-rls",
     "Severity": 1,
-    "Scope": "Table, CalculatedTable",
+    "Scope": "TablePermission",
     "Expression": "RegEx.IsMatch(Expression,\"(?i)USERNAME\\(\")\r\nor\r\nRegEx.IsMatch(Expression,\"(?i)USERPRINCIPALNAME\\(\")",
     "CompatibilityLevel": 1200
   },
@@ -255,11 +265,11 @@
     "ID": "AVOID_DUPLICATE_MEASURES",
     "Name": "[Espressioni DAX] Due misure non dovrebbero avere la stessa definizione",
     "Category": "Espressioni DAX",
+    "Description": "Per ridurre la ridondanza, si dovrebbero evitare due misure con nomi diversi e definite dalla stessa espressione DAX.",
     "Severity": 2,
     "Scope": "Measure",
     "Expression": "Model.AllMeasures.Any(Expression.Replace(\" \",\"\").Replace(\"\\n\",\"\").Replace(\"\\r\",\"\").Replace(\"\\t\",\"\") = outerIt.Expression.Replace(\" \",\"\").Replace(\"\\n\",\"\").Replace(\"\\r\",\"\").Replace(\"\\t\",\"\") and it <> outerIt)",
-    "CompatibilityLevel": 1200,
-    "Description": ""
+    "CompatibilityLevel": 1200
   },
   {
     "ID": "USE_THE_TREATAS_FUNCTION_INSTEAD_OF_INTERSECT",
@@ -332,10 +342,30 @@
     "CompatibilityLevel": 1200
   },
   {
+    "ID": "AVOID_USING_'1-(X/Y)'_SYNTAX",
+    "Name": "[Espressioni DAX] Evita di usare la sintassi '1-(x/y)'",
+    "Category": "Espressioni DAX",
+    "Description": "Invece di utilizzare la sintassi '1-(x/y)' per ottenere un calcolo percentuale, utilizzare le funzioni DAX di base (come mostrato di seguito). L'utilizzo della sintassi migliorata generalmente migliorerà le prestazioni. La sintassi '1-...' restituisce sempre un valore, mentre la soluzione senza '1-...' no (poiché il valore potrebbe essere 'vuoto'). Pertanto la sintassi '1-...' può restituire più righe/colonne che possono comportare una velocità di query più lenta. Chiariamo con un esempio: 1 - SUM ( 'Sales'[CostAmount] ) / SUM( 'Sales'[SalesAmount] )  Better: DIVIDE ( SUM ( 'Sales'[SalesAmount] ) - SUM ( 'Sales'[CostAmount] ), SUM ( 'Sales'[SalesAmount] ) )  Meglio: VAR x = SUM ( 'Sales'[SalesAmount] ) RETURN DIVIDE ( x - SUM ( 'Sales'[CostAmount] ), x )",
+    "Severity": 2,
+    "Scope": "Measure, CalculatedColumn, CalculationItem",
+    "Expression": "RegEx.IsMatch(Expression,\"[0-9]+\\s*[-+]\\s*[\\(]*\\s*(?i)SUM\\s*\\(\\s*\\'*[A-Za-z0-9 _]+\\'*\\s*\\[[A-Za-z0-9 _]+\\]\\s*\\)\\s*\\/\")\r\nor\r\nRegEx.IsMatch(Expression,\"[0-9]+\\s*[-+]\\s*(?i)DIVIDE\\s*\\(\")",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "EVALUATEANDLOG_SHOULD_NOT_BE_USED_IN_PRODUCTION_MODELS",
+    "Name": "[Espressioni DAX] La funzione EVALUATEANDLOG non deve essere utilizzata nei modelli di produzione.",
+    "Category": "Espressioni DAX",
+    "Description": "La funzione EVALUATEANDLOG deve essere usata solo in ambienti di sviluppo/test e non deve essere usata in modelli di produzione.    Riferimento: https://pbidax.wordpress.com/2022/08/16/introduce-the-dax-evaluateandlog-function/",
+    "Severity": 1,
+    "Scope": "Measure",
+    "Expression": "RegEx.IsMatch(Expression,\"(?i)EVALUATEANDLOG\\s*\\(\")",
+    "CompatibilityLevel": 1200
+  },
+  {
     "ID": "DATA_COLUMNS_MUST_HAVE_A_SOURCE_COLUMN",
     "Name": "[Prevenzione Errori] Le colonne di dati devono avere una colonna di origine",
     "Category": "[Prevenzione errori]",
-    "Description": "Le colonne di dati devono avere una colonna di origine. Una colonna di dati senza una colonna di origine causerà un errore durante l'elaborazione del modello.",
+    "Description": "Le colonne di dati devono avere una colonna di origine (cioè una colonna del database). Una colonna di dati senza colonna di origine causerà un errore durante l'elaborazione del modello.",
     "Severity": 3,
     "Scope": "DataColumn",
     "Expression": "string.IsNullOrWhitespace(SourceColumn)",
@@ -362,13 +392,66 @@
     "CompatibilityLevel": 1200
   },
   {
+    "ID": "AVOID_THE_USERELATIONSHIP_FUNCTION_AND_RLS_AGAINST_THE_SAME_TABLE",
+    "Name": "[Prevenzione errori] Evita la funzione USERELATIONSHIP e RLS sulla stessa tabella",
+    "Category": "[Prevenzione errori]",
+    "Description": "La funzione USERELATIONSHIP non può essere utilizzata su una tabella che sfrutta anche la sicurezza a livello di riga (RLS). Questo genererà un errore quando si utilizza la misura particolare in un oggetto visivo. Questa regola evidenzierà la tabella utilizzata nella funzione USERELATIONSHIP di una misura così come RLS. Riferimento: https://blog.crossjoin.co.uk/2013/05/10/userelationship-and-tabular-row-security/",
+    "Severity": 3,
+    "Scope": "Table, CalculatedTable",
+    "Expression": "Model.AllMeasures.Any(RegEx.IsMatch(Expression,\"(?i)USERELATIONSHIP\\s*\\(\\s*.+?(?=])\\]\\s*,\\s*'*\" + current.Name + \"'*\\[\"))\r\nand\r\nRowLevelSecurity.Any(it <> null)",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "RELATIONSHIP_COLUMNS_SAME_DATA_TYPE",
+    "Name": "[Prevenzione errori] Le colonne usate nelle relazioni devono essere dello stesso tipo di dati",
+    "Category": "[Prevenzione errori]",
+    "Description": "Le colonne utilizzate in una relazione devono essere dello stesso tipo di dati. Idealmente, saranno di tipo di dati intero (consultare la regola correlata \"[Formattazione] Le colonne di relazione dovrebbero essere di tipo di dati intero\"). Avere colonne all'interno di una relazione che sono di tipi di dati diversi può portare a vari problemi.",
+    "Severity": 3,
+    "Scope": "Relationship",
+    "Expression": "FromColumn.DataType != ToColumn.DataType",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "AVOID_INVALID_NAME_CHARACTERS",
+    "Name": "[Prevenzione errori] Evita caratteri non validi nei nomi",
+    "Category": "[Prevenzione errori]",
+    "Description": "Questa regola identifica se un nome per un determinato oggetto nel tuo modello (ad esempio tabella/colonna/misura) contiene un carattere non valido. I caratteri non validi causano un errore durante il deploy del modello (e il fallimento del deploy). Questa regola ha un'espressione di correzione che converte il carattere non valido in uno spazio, risolvendo il problema.",
+    "Severity": 3,
+    "Scope": "Table, Measure, Hierarchy, Level, Perspective, Partition, DataColumn, CalculatedColumn, CalculatedTable, CalculatedTableColumn, KPI, ModelRole, CalculationGroup, CalculationItem",
+    "Expression": "Name.ToCharArray().Any(char.IsControl(it) and !char.IsWhiteSpace(it))",
+    "FixExpression": "Name = string.Concat( it.Name.ToCharArray().Select( c => (char.IsControl(c) && !char.IsWhiteSpace(c)) ? ' ': c ))",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "AVOID_INVALID_DESCRIPTION_CHARACTERS",
+    "Name": "[Prevenzione errori] Evita caratteri non validi nelle descrizioni.",
+    "Category": "[Prevenzione errori]",
+    "Description": "Questa regola identifica se una descrizione per un determinato oggetto nel tuo modello (ad esempio tabella/colonna/misura) contiene un carattere non valido. I caratteri non validi causano un errore durante il deploy del modello (e il fallimento del deploy). Questa regola ha un'espressione di correzione che converte il carattere non valido in uno spazio, risolvendo il problema.",
+    "Severity": 3,
+    "Scope": "Table, Measure, Hierarchy, Level, Perspective, Partition, DataColumn, CalculatedColumn, CalculatedTable, CalculatedTableColumn, KPI, ModelRole, CalculationGroup, CalculationItem",
+    "Expression": "Description.ToCharArray().Any(char.IsControl(it) and !char.IsWhiteSpace(it))",
+    "FixExpression": "Description = string.Concat( it.Description.ToCharArray().Select( c => (char.IsControl(c) && !char.IsWhiteSpace(c)) ? ' ': c ))",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SET_ISAVAILABLEINMDX_TO_TRUE_ON_NECESSARY_COLUMNS",
+    "Name": "[Prevenzione errori] Imposta IsAvailableInMdx su true nelle colonne necessarie",
+    "Category": "[Prevenzione errori]",
+    "Description": "Per evitare errori, assicurarsi che le gerarchie degli attributi siano abilitate se una colonna viene utilizzata per ordinare un'altra colonna, utilizzata in una gerarchia, utilizzata nelle viarabili o come ordinamento da un'altra colonna.",
+    "Severity": 3,
+    "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
+    "Expression": "IsAvailableInMDX = false\r\n\r\nand\r\n(\r\nUsedInSortBy.Any()\r\nor\r\nUsedInHierarchies.Any()\r\nor\r\nUsedInVariations.Any()\r\nor\r\nSortByColumn != null\r\n)",
+	"FixExpression": "IsAvailableInMDX = true",
+    "CompatibilityLevel": 1200
+  },
+  {
     "ID": "UNNECESSARY_COLUMNS",
     "Name": "[Manutenzione] Rimuovi colonne non necessarie",
     "Category": "[Manutenzione]",
     "Description": "Le colonne nascoste a cui non fanno riferimento espressioni DAX, relazioni, livelli gerarchici o proprietà \"Ordina per\" devono essere rimosse.",
     "Severity": 2,
     "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
-    "Expression": "(IsHidden or Table.IsHidden)\n\n\r\nand ReferencedBy.Count = 0\r\n\n\nand (not UsedInRelationships.Any())\n\n\r\nand (not UsedInSortBy.Any())\n\n\r\nand (not UsedInHierarchies.Any())\n\n\r\nand (not Table.RowLevelSecurity.Any(\nit <> null and it.IndexOf(\"[\" + current.Name + \"]\", \"OrdinalIgnoreCase\") >= 0\n))\n\n and (not Model.Roles.Any(RowLevelSecurity.Any(\nit <> null and \n(\nit.IndexOf(current.Table.Name + \"[\" + current.Name + \"]\", \"OrdinalIgnoreCase\") >= 0 or\n it.IndexOf(\"'\" + current.Table.Name + \"'[\" + current.Name + \"]\", \"OrdinalIgnoreCase\") >= 0\n )\n)))",
+    "Expression": "(IsHidden or Table.IsHidden)\n\n\r\nand ReferencedBy.Count = 0\r\n\n\nand (not UsedInRelationships.Any())\n\n\r\nand (not UsedInSortBy.Any())\n\n\r\nand (not UsedInHierarchies.Any())\n\n\r\nand (not Table.RowLevelSecurity.Any(\nit <> null and it.IndexOf(\"[\" + current.Name + \"]\", \"OrdinalIgnoreCase\") >= 0\n))\n\n and (not Model.Roles.Any(RowLevelSecurity.Any(\nit <> null and \n(\nit.IndexOf(current.Table.Name + \"[\" + current.Name + \"]\", \"OrdinalIgnoreCase\") >= 0 or\n it.IndexOf(\"'\" + current.Table.Name + \"'[\" + current.Name + \"]\", \"OrdinalIgnoreCase\") >= 0\n )\n)))\r\nand not (\r\nObjectLevelSecurity.Any(it.ToString() == \"None\"))\r\nand not (\r\nTable.ObjectLevelSecurity.Any(it.ToString() == \"None\"))",
     "FixExpression": "Delete()",
     "CompatibilityLevel": 1200
   },
@@ -400,7 +483,7 @@
     "Description": "Le origini dati a cui non fa riferimento alcuna partizione possono essere rimosse.",
     "Severity": 1,
     "Scope": "ProviderDataSource, StructuredDataSource",
-    "Expression": "UsedByPartitions.Count() == 0",
+    "Expression": "UsedByPartitions.Count() == 0\r\nand not Model.Tables.Any(SourceExpression.Contains(OuterIt.Name))\r\nand not Model.AllPartitions.Any(Query.Contains(OuterIt.Name))",
     "FixExpression": "Delete()",
     "CompatibilityLevel": 1200
   },
@@ -478,6 +561,16 @@
     "CompatibilityLevel": 1200
   },
   {
+    "ID": "TRIM_OBJECT_NAMES",
+    "Name": "[Naming Conventions] Accorpa i nomi degli oggetti.",
+    "Category": "Naming Conventions",
+    "Description": "Lasciare accidentalmente uno spazio in coda a un nome di oggetto è un'occorrenza comune quando si copiano/duplicano oggetti in Tabular Editor.",
+    "Severity": 1,
+    "Scope": "Model, Table, Measure, Hierarchy, Level, Perspective, Partition, ProviderDataSource, DataColumn, CalculatedColumn, CalculatedTable, CalculatedTableColumn, StructuredDataSource, NamedExpression, ModelRole, CalculationGroup, CalculationItem",
+    "Expression": "Name.StartsWith(\" \") or Name.EndsWith(\" \")",
+    "CompatibilityLevel": 1200
+  },
+  {
     "ID": "FORMAT_FLAG_COLUMNS_AS_YES/NO_VALUE_STRINGS",
     "Name": "[Formattazione] Formatta le colonne flag come stringhe di valori Sì/No",
     "Category": "Formattazione",
@@ -504,7 +597,7 @@
     "Description": "Le colonne di tipo \"DateTime\" che hanno \"Mese\" nel nome devono essere formattate come \"mm/gg/aaaa\".",
     "Severity": 1,
     "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
-    "Expression": "Name.IndexOf(\"Date\", \"OrdinalIgnoreCase\") >= 0 and DataType = \"DateTime\" and FormatString <> \"mm/dd/yyyy\"",
+    "Expression": "Name.IndexOf(\"Date\", \"OrdinalIgnoreCase\") >= 0 \r\nand \r\nDataType = \"DateTime\" \r\nand \r\nFormatString <> \"mm/dd/yyyy\"",
     "FixExpression": "FormatString = \"mm/dd/yyyy\"",
     "CompatibilityLevel": 1200
   },
@@ -547,7 +640,7 @@
     "Severity": 2,
     "Scope": "Measure",
     "Expression": "FormatString.Contains(\"%\") and FormatString <> \"#,0.0%;-#,0.0%;#,0.0%\"",
-    "FixExpression": "FormatString = \"#,0.0%;-#,0.0%;#,0.0%\"",
+    "FixExpression": "FormatString = \"#,0.0%\\u003B-#,0.0%\\u003B#,0.0%\"",
     "CompatibilityLevel": 1200,
     "Description": ""
   },

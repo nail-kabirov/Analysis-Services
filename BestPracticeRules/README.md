@@ -1,5 +1,3 @@
-# Best Practice Rules
-
 Make sure to also check out the [PowerBI.com blog post](https://powerbi.microsoft.com/en-us/blog/best-practice-rules-to-improve-your-models-performance/ "PowerBI.com blog post") on this topic!
 
 Check out the [PowerBI.com blog post on v1.1](https://powerbi.microsoft.com/en-us/blog/best-practice-rules-to-improve-your-models-performance-and-design-v1-1/, "PowerBI.com blog post").
@@ -62,9 +60,16 @@ if (version == "3")
 w.DownloadFile(url, downloadLoc);
 ```
 
-*Note: If you want to load the rules in [Italian](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Italian), replace the url parameter in the code above with the code below.*
+*Note: If you want to load the rules in Italian, Japanese or Spanish, replace the url parameter in the code above with the appropriate code below.*
 ```C#
+// Italian
 string url = "https://raw.githubusercontent.com/microsoft/Analysis-Services/master/BestPracticeRules/Italian/BPARules.json";
+
+// Japanese
+string url = "https://raw.githubusercontent.com/microsoft/Analysis-Services/master/BestPracticeRules/Japanese/BPARules.json";
+
+// Spanish
+string url = "https://raw.githubusercontent.com/microsoft/Analysis-Services/master/BestPracticeRules/Spanish/BPARules.json";
 ```
 
 4. Close and reopen [Tabular Editor](https://tabulareditor.com/ "Tabular Editor").
@@ -110,12 +115,61 @@ string url = "https://raw.githubusercontent.com/microsoft/Analysis-Services/mast
 
 * English
 * [Italian](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Italian)
+* [Japanese](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Japanese)
+* [Spanish](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Spanish)
 
 *Note: If you would like to volunteer to translate the Best Practice Rules into another language, please contact us at pbibestpractice@microsoft.com.*
 
 ## Version History
 
-* 2021-10-21 The Best Practice Rules are now available in [Italian](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Italian)!
+* 2023-06-20 Version 1.2.6
+    * New Rules
+        *  [Error Prevention] Set IsAvailableInMdx to true on necessary columns
+        *  [Performance] Avoid using many-to-many relationships on tables used for dynamic row level security
+    * Updated Rules
+        * [Maintenance] Remove unnecessary columns
+          * Rule now accounts for columns/tables used in Object Level Security (OLS)  
+* 2023-02-14 Version 1.2.5
+    * New Rules
+        * [Error Prevention] Avoid invalid characters in names
+	  * [Error Prevention] Avoid invalid characters in descriptions
+	  * [Naming Conventions] Trim object names ([#193](https://github.com/microsoft/Analysis-Services/pull/193))
+    * Updated Rules
+        * [DAX Expressions] Avoid using '1-x/y)' syntax
+	     * Updated recommendation to use accurate calculation ([#192](https://github.com/microsoft/Analysis-Services/issues/192))
+	* [Maintenance] Remove data sources not referenced by any partitions
+	     * Updated rule logic to account for M source expressions and M queries ([#197](https://github.com/microsoft/Analysis-Services/issues/197))
+* 2023-01-16 Version 1.2.4
+    * Fixed a bug in the Set IsAvailableInMdx Rule [#190](https://github.com/microsoft/Analysis-Services/issues/190)
+* 2023-01-09 
+    * The Best Practice Rules are now available in [Spanish](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Spanish)!
+* 2022-11-22 Version 1.2.3
+    * The Best Practice Rules are now available in [Japanese](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Japanese)!
+    * New Rules
+        * [DAX Expressions] The EVALUATEANDLOG function should not be used in production models ([#163](https://github.com/microsoft/Analysis-Services/issues/163))
+    * Updated Rules
+        * [Performance] Check if dynamic row level security (RLS) is necessary
+	      * Updated the scope of the rule to Table Permissions ([#178](https://github.com/microsoft/Analysis-Services/issues/178))
+        * [Performance] Minimize Power Query transformations
+	      * Removed 'select' from the Native.Query function portion of the rule
+        * [Performance] Remove redundant columns in related tables
+	       * Added description
+        * [Formatting] Provide format string for "Date" columns
+	       * Updated description
+        * [DAX Expressions] No two measures should have the same definition
+	       * Added description
+        * [Error Prevention] Data columns must have a source column
+	       * Updated description
+* 2022-06-06 Version 1.2.2
+    * New Rules
+        * [DAX Expressions] Avoid using the '1-(x/y)' syntax
+        * [Error Prevention] Avoid the USERELATIONSHIP function and RLS against the same table
+        * [Error Prevention] Relationship columns should be of the same data type
+    * Updated Rules
+        * [Formatting] Percentage formatting
+               * Fixed a bug within the fix expression   
+* 2021-10-21 
+    * The Best Practice Rules are now available in [Italian](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Italian)!
 * 2021-08-18 Version 1.2.1
     * New Rules
         * [Maintenance] Fix referential integrity violations ([blog post](https://www.elegantbi.com/post/findblankrows)) 
@@ -139,16 +193,14 @@ string url = "https://raw.githubusercontent.com/microsoft/Analysis-Services/mast
 			* Simplified rule logic
 		* [Performance] Reduce usage of long-length columns with high cardinality
 		    * Updated rule logic to use Int64
-
-* 2021-10-21 Best Practice Rules now available in [Italian](https://github.com/microsoft/Analysis-Services/tree/master/BestPracticeRules/Italian)!
 * 2021-06-13 Version 1.1.2
     * Modified Rules
         * [DAX Expressions] Use the DIVIDE function for division
-            * Updated the rule logic to not mistake comments for division
+        	* Updated the rule logic to not mistake comments for division
 * 2021-05-26 Version 1.1.1
     * Modified Rules
         * [DAX Expressions] Inactive relationships that are never activated
-            * Expanded the scope to include Calculation Items ([#110](https://github.com/microsoft/Analysis-Services/issues/110)) 
+        	* Expanded the scope to include Calculation Items ([#110](https://github.com/microsoft/Analysis-Services/issues/110)) 
 * 2021-05-20 Version 1.1 (make sure to read the [blog post](https://powerbi.microsoft.com/en-us/blog/best-practice-rules-to-improve-your-models-performance-and-design-v1-1/ "blog post"))
     * New Rules
         * [DAX Expressions] Filter column values with proper syntax
@@ -158,11 +210,11 @@ string url = "https://raw.githubusercontent.com/microsoft/Analysis-Services/mast
         * [Maintenance] Calculation groups with no calculation items
     * Modified Rules
         * [Naming Conventions] Partition name should match table name for single partition tables
-            * Added Fix Expression (must use Tabular Editor 2.16.1 or higher)
+        	* Added Fix Expression (must use Tabular Editor 2.16.1 or higher)
         * [Error Prevention] Calculated columns must have an expression
-            * New name: Expression-reliant objects must have an expression
+        	* New name: Expression-reliant objects must have an expression
         * [Maintenance] Objects with no description
-            * New name: Visible objects with no description
+        	* New name: Visible objects with no description
     * Removed Rules
         * [DAX Expressions] No two measures should have the same definition
 * 2021-02-03 Version 1.0

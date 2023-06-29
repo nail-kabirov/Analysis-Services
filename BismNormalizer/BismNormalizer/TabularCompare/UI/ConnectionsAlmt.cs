@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Microsoft.AnalysisServices;
+using Tom=Microsoft.AnalysisServices.Tabular;
 using System.Drawing;
 using BismNormalizer.TabularCompare.UI.DesktopInstances;
 using System.Linq.Expressions;
@@ -94,7 +94,7 @@ namespace BismNormalizer.TabularCompare.UI
             _powerBIInstances.Clear();
             try
             {
-                _powerBIInstances = PowerBIHelper.GetLocalInstances();
+                _powerBIInstances = PowerBIHelper.GetLocalInstances(includePBIRS:false);
             }
             catch { }
 
@@ -518,10 +518,10 @@ namespace BismNormalizer.TabularCompare.UI
                 string currentDb = cboCatalog.Text;
 
                 // discover databases
-                Server server = new Server();
+                Tom.Server server = new Tom.Server();
                 server.Connect($"Provider=MSOLAP;Data Source={serverName};");
                 List<string> databases = new List<string>();
-                foreach (Database database in server.Databases)
+                foreach (Tom.Database database in server.Databases)
                 {
                     databases.Add(database.Name);
                 }

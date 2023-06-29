@@ -35,7 +35,8 @@ namespace BismNormalizer.TabularCompare.TabularMetadata
             options.IgnoreInferredObjects = true;
             options.IgnoreTimestamps = true;
             options.SplitMultilineStrings = true;
-            _objectDefinition = Tom.JsonSerializer.SerializeObject(namedMetaDataObject, options);
+
+            _objectDefinition = Tom.JsonSerializer.SerializeObject(namedMetaDataObject, options, parentTabularModel.ConnectionInfo.CompatibilityLevel, parentTabularModel.ConnectionInfo.CompatibilityMode);
 
             //Remove annotations
             {
